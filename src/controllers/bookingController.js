@@ -97,6 +97,19 @@ exports.updateBookings = async (req, res) => {
 exports.deleteBookings = async (req, res) => {
   const bookingID = parseInt(req.params.id);
 
+  const findBookings = await prisma.booking.findFirst({
+    where: {
+      id: bookingID,
+      userId: req.user.userId
+    }
+  })
+
+  if (!findBookings) {
+    return res.status(404).json({
+      message: 'Booking not found'
+    });
+  }
+
   const deleteBookings = await prisma.booking.delete({
     where: {
       id: bookingID
