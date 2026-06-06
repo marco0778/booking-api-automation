@@ -9,57 +9,86 @@ exports.createBooking = async (req, res) => {
   if (!date)
     return res.status(404).json({ message: 'Date is required' });
 
-  const booking = await prisma.booking.create({
-    data: {
-      title,
-      date: new Date(date),
-      userId: req.user.userId
-    }
-  });
+  const inputtedDate = new Date(date);
+  const dateNow = new Date();
 
-  res.json(booking);
+  if(inputtedDate.valueOf() < dateNow.valueOf()){
+    return res.status(401).json({message: 'You should not choose previous date'});
+  }
+
+  try {
+    const booking = await prisma.booking.create({
+      data: {
+        title,
+        date: inputtedDate,
+        userId: req.user.userId
+      }
+    });
+
+    res.json(booking);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to create booking, please try again later" })
+  }
+
 };
 
 exports.getBookings = async (req, res) => {
-  const bookings = await prisma.booking.findMany({
-    where: { userId: req.user.userId }
-  });
 
-  res.json(bookings);
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: { userId: req.user.userId }
+    });
+
+    res.json(bookings);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to get booking, please try again later" })
+  }
+
 };
 
 exports.getBookingbyID = async (req, res) => {
   const bookingID = parseInt(req.params.id);
 
-  const bookingbyID = await prisma.booking.findFirst({
-    where: {
-      id: bookingID,
-      userId: req.user.userId
-    }
-  });
-
-  if (!bookingbyID) {
-    return res.status(404).json({
-      message: 'Booking not found'
+  try {
+    const bookingbyID = await prisma.booking.findFirst({
+      where: {
+        id: bookingID,
+        userId: req.user.userId
+      }
     });
+
+    if (!bookingbyID) {
+      return res.status(404).json({
+        message: 'Booking not found'
+      });
+    }
+
+    res.json(bookingbyID);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to get booking, please try again later" })
   }
 
-  res.json(bookingbyID);
+
 };
 
 exports.getBookingbyTitle = async (req, res) => {
   const searchTitle = req.query.searchTitle;
 
-  const bookingbyTitle = await prisma.booking.findMany({
-    where: {
-      title: {
-        contains: searchTitle
-      },
-      userId: req.user.userId
-    }
-  });
+  try {
+    const bookingbyTitle = await prisma.booking.findMany({
+      where: {
+        title: {
+          contains: searchTitle
+        },
+        userId: req.user.userId
+      }
+    });
 
-  res.json(bookingbyTitle);
+    res.json(bookingbyTitle);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to get booking, please try again later" })
+  }
+
 };
 
 //UPDATE
@@ -67,54 +96,86 @@ exports.updateBookings = async (req, res) => {
   const { title, date } = req.body;
   const bookingID = parseInt(req.params.id);
 
-  const findBookings = await prisma.booking.findFirst({
-    where: {
-      id: bookingID,
-      userId: req.user.userId
-    }
-  })
+  try {
+    const findBookings = await prisma.booking.findFirst({
+      where: {
+        id: bookingID,
+        userId: req.user.userId
+      }
+    })
 
-  if (!findBookings) {
-    return res.status(404).json({
-      message: 'Booking not found'
-    });
+    if (!findBookings) {
+      return res.status(404).json({
+        message: 'Booking not found'
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to update booking, please try again later" })
   }
 
-  const updateBookings = await prisma.booking.update({
-    where: {
-      id: bookingID
-    },
-    data: {
-      title,
-      date
-    }
-  });
+  if (!title)
+    return res.status(404).json({ message: 'Title is required' });
 
-  res.json(updateBookings);
+  if (!date)
+    return res.status(404).json({ message: 'Date is required' });
+
+  const inputtedDate = new Date(date);
+  const dateNow = new Date();
+
+  if(inputtedDate.valueOf() < dateNow.valueOf()){
+    return res.status(401).json({message: 'You should not choose previous date'});
+  }
+
+  try {
+    const updateBookings = await prisma.booking.update({
+      where: {
+        id: bookingID
+      },
+      data: {
+        title,
+        date
+      }
+    });
+
+    res.json(updateBookings);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to update booking, please try again later" })
+  }
+
+
 };
 
 //DELETE
 exports.deleteBookings = async (req, res) => {
   const bookingID = parseInt(req.params.id);
 
-  const findBookings = await prisma.booking.findFirst({
-    where: {
-      id: bookingID,
-      userId: req.user.userId
-    }
-  })
+  try {
+    const findBookings = await prisma.booking.findFirst({
+      where: {
+        id: bookingID,
+        userId: req.user.userId
+      }
+    })
 
-  if (!findBookings) {
-    return res.status(404).json({
-      message: 'Booking not found'
-    });
+    if (!findBookings) {
+      return res.status(404).json({
+        message: 'Booking not found'
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to delete booking, please try again later" })
   }
 
-  const deleteBookings = await prisma.booking.delete({
-    where: {
-      id: bookingID
-    }
-  });
+  try {
+    const deleteBookings = await prisma.booking.delete({
+      where: {
+        id: bookingID
+      }
+    });
 
-  res.json(deleteBookings);
+    res.json(deleteBookings);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to delete booking, please try again later" })
+  }
+
 };

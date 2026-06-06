@@ -5,8 +5,6 @@ const prisma = require('../config/prisma');
 exports.register = async (req, res) => {
   const { email, password } = req.body;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
   if (!email) return res.status(400).json({ message: "Email is required" });
   if (!email.match("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")) return res.status(400).json({ message: "Invalid format for Email" });
 
@@ -23,6 +21,7 @@ exports.register = async (req, res) => {
   }
 
   try {
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: { email, password: hashedPassword }
     });
@@ -30,29 +29,33 @@ exports.register = async (req, res) => {
     const { password: _, ...safeUser } = user;
     res.json(safeUser);
   } catch (error) {
-    return res.status(400).json({ message: "Failed to register, please try again later" })
+    return res.status(500).json({ message: "Failed to register, please try again later" })
   }
 
-  // const user = await prisma.user.create({
-  //   data: { email, password: hashedPassword }
-  // });
-
-  // const { password: _, ...safeUser } = user;
-  // res.json(safeUser);
 };
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  if (!email) return res.status(400).json({ message: "Email is required" });
 
-  if (!user) return res.status(404).json({ message: 'User not found' });
+  if (!password) return res.status(400).json({ message: "Password is required" });
 
-  const valid = await bcrypt.compare(password, user.password);
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
 
-  if (!valid) return res.status(401).json({ message: 'Invalid password' });
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET);
+    const valid = await bcrypt.compare(password, user.password);
 
-  res.json({ token });
+    if (!valid) return res.status(401).json({ message: 'Invalid password' });
+
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET);
+
+    res.json({ token });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to login, please try again later" })
+  }
+  // const user = await prisma.user.findUnique({ where: { email } });
+
 };
