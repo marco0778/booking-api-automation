@@ -4,16 +4,16 @@ exports.createBooking = async (req, res) => {
   const { title, date } = req.body;
 
   if (!title)
-    return res.status(404).json({ message: 'Title is required' });
+    return res.status(400).json({ message: 'Title is required' });
 
   if (!date)
-    return res.status(404).json({ message: 'Date is required' });
+    return res.status(400).json({ message: 'Date is required' });
 
   const inputtedDate = new Date(date);
   const dateNow = new Date();
 
   if(inputtedDate.valueOf() < dateNow.valueOf()){
-    return res.status(401).json({message: 'You should not choose previous date'});
+    return res.status(400).json({message: 'You should not choose previous date'});
   }
 
   try {
@@ -49,6 +49,10 @@ exports.getBookings = async (req, res) => {
 exports.getBookingbyID = async (req, res) => {
   const bookingID = parseInt(req.params.id);
 
+  if(isNaN(bookingID)){
+    return res.status(400).json({message: `Invalid booking ID`})
+  }
+
   try {
     const bookingbyID = await prisma.booking.findFirst({
       where: {
@@ -58,7 +62,7 @@ exports.getBookingbyID = async (req, res) => {
     });
 
     if (!bookingbyID) {
-      return res.status(404).json({
+      return res.status(400).json({
         message: 'Booking not found'
       });
     }
@@ -105,7 +109,7 @@ exports.updateBookings = async (req, res) => {
     })
 
     if (!findBookings) {
-      return res.status(404).json({
+      return res.status(400).json({
         message: 'Booking not found'
       });
     }
@@ -114,16 +118,16 @@ exports.updateBookings = async (req, res) => {
   }
 
   if (!title)
-    return res.status(404).json({ message: 'Title is required' });
+    return res.status(400).json({ message: 'Title is required' });
 
   if (!date)
-    return res.status(404).json({ message: 'Date is required' });
+    return res.status(400).json({ message: 'Date is required' });
 
   const inputtedDate = new Date(date);
   const dateNow = new Date();
 
   if(inputtedDate.valueOf() < dateNow.valueOf()){
-    return res.status(401).json({message: 'You should not choose previous date'});
+    return res.status(400).json({message: 'You should not choose previous date'});
   }
 
   try {
@@ -158,7 +162,7 @@ exports.deleteBookings = async (req, res) => {
     })
 
     if (!findBookings) {
-      return res.status(404).json({
+      return res.status(400).json({
         message: 'Booking not found'
       });
     }
