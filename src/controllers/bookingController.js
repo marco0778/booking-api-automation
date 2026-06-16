@@ -12,8 +12,13 @@ exports.createBooking = async (req, res) => {
   const inputtedDate = new Date(date);
   const dateNow = new Date();
 
-  if(inputtedDate.valueOf() < dateNow.valueOf()){
-    return res.status(400).json({message: 'You should not choose previous date'});
+  const stringDate = `${inputtedDate}`;
+  if (stringDate == 'Invalid Date') {
+    return res.status(400).json({ message: 'Invalid Date format' });
+  }
+
+  if (inputtedDate.valueOf() < dateNow.valueOf()) {
+    return res.status(400).json({ message: 'You should not choose previous date' });
   }
 
   try {
@@ -49,8 +54,8 @@ exports.getBookings = async (req, res) => {
 exports.getBookingbyID = async (req, res) => {
   const bookingID = parseInt(req.params.id);
 
-  if(isNaN(bookingID)){
-    return res.status(400).json({message: `Invalid booking ID`})
+  if (isNaN(bookingID)) {
+    return res.status(400).json({ message: `Invalid booking ID` })
   }
 
   try {
@@ -126,8 +131,13 @@ exports.updateBookings = async (req, res) => {
   const inputtedDate = new Date(date);
   const dateNow = new Date();
 
-  if(inputtedDate.valueOf() < dateNow.valueOf()){
-    return res.status(400).json({message: 'You should not choose previous date'});
+  const stringDate = `${inputtedDate}`;
+  if (stringDate == 'Invalid Date') {
+    return res.status(400).json({ message: 'Invalid Date format' });
+  }
+
+  if (inputtedDate.valueOf() < dateNow.valueOf()) {
+    return res.status(400).json({ message: 'You should not choose previous date' });
   }
 
   try {
